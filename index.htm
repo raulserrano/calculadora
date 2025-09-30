@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculadora</title>
+  <style>
+    :root {
+      --bg: #0f172a;        /* slate-900 */
+      --panel: #111827;     /* gray-900 */
+      --accent: #22d3ee;    /* cyan-400 */
+      --text: #e5e7eb;      /* gray-200 */
+      --muted: #9ca3af;     /* gray-400 */
+      --btn: #1f2937;       /* gray-800 */
+      --btn-hover: #374151; /* gray-700 */
+      --danger: #ef4444;    /* red-500 */
+      --op: #0ea5e9;        /* sky-500 */
+      --eq: #22c55e;        /* green-500 */
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 70% -10%, #1e293b 0%, #0b1220 35%, #060913 100%), var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+    .calc {
+      width: min(420px, 95vw);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      overflow: hidden;
+      backdrop-filter: blur(6px);
+    }
+    .display {
+      padding: 20px 16px 12px;
+      min-height: 110px;
+      background: linear-gradient(180deg, rgba(34,211,238,0.08), rgba(34,197,94,0.05));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .expr {
+      font-size: 14px;
+      color: var(--muted);
+      min-height: 20px;
+      word-break: break-all;
+    }
+    .result {
+      margin-top: 6px;
+      font-size: clamp(28px, 6.5vw, 40px);
+      font-weight: 700;
+      text-align: right;
+      letter-spacing: 0.5px;
+      word-break: break-all;
+    }
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 16px;
+      background: transparent;
+    }
+    button.key {
+      appearance: none;
+      border: 0;
+      padding: 14px 12px;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 14px;
+      color: var(--text);
+      background: var(--btn);
+      cursor: pointer;
+      transition: transform 0.03s ease, background 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    button.key:hover { background: var(--btn-hover); }
+    button.key:active { transform: translateY(1px); }
+    .span-2 { grid-column: span 2; }
+    .op { background: linear-gradient(180deg, rgba(14,165,233,0.25), rgba(14,165,233,0.15)); }
+    .eq { background: linear-gradient(180deg, rgba(34,197,94,0.3), rgba(34,197,94,0.18)); }
+    .danger { background: linear-gradient(180deg, rgba(239,68,68,0.25), rgba(239,68,68,0.15)); }
+    .footer {
+      padding: 0 16px 14px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); border: 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="calc" aria-label="Calculadora">
+    <section class="display" aria-live="polite">
+      <div id="expr" class="expr" aria-label="expresión actual"></div>
+      <div id="result" class="result" aria-label="resultado">0</div>
+    </section>
+
+    <section class="keys" id="keys" role="group" aria-label="teclas de la calculadora">
+      <button class="key danger" data-action="clear" title="Borrar todo (C)">C</button>
+      <button class="key" data-action="plusminus" title="Cambiar signo (±)">±</button>
+      <button class="key" data-action="percent" title="Porcentaje (%)">%</button>
+      <button class="key op" data-action="operator" data-op="÷" title="Dividir">÷</button>
+
+      <button class="key" data-action="digit" data-digit="7">7</button>
+      <button class="key" data-action="digit" data-digit="8">8</button>
+      <button class="key" data-action="digit" data-digit="9">9</button>
+      <button class="key op" data-action="operator" data-op="×" title="Multiplicar">×</button>
+
+      <button class="key" data-action="digit" data-digit="4">4</button>
+      <button class="key" data-action="digit" data-digit="5">5</button>
+      <button class="key" data-action="digit" data-digit="6">6</button>
+      <button class="key op" data-action="operator" data-op="−" title="Restar">−</button>
+
+      <button class="key" data-action="digit" data-digit="1">1</button>
+      <button class="key" data-action="digit" data-digit="2">2</button>
+      <button class="key" data-action="digit" data-digit="3">3</button>
+      <button class="key op" data-action="operator" data-op="+" title="Sumar">+</button>
+
+      <button class="key" data-action="delete" title="Borrar último (⌫)">⌫</button>
+      <button class="key" data-action="digit" data-digit="0">0</button>
+      <button class="key" data-action="decimal" title="Decimal (.)">.</button>
+      <button class="key eq span-1" data-action="equals" title="Igual (=)">=</button>
+    </section>
+
+    <p class="footer">Soporta teclado: números, + − × ÷, Enter (=), Backspace (⌫), % y .</p>
+  </main>
+
+  <script src="./prueba3.js" defer></script>
+</body>
+</html>
